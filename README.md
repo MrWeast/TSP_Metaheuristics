@@ -13,11 +13,11 @@ Metaheuristics Used:
 
 Includes:
 - Examples:
- - sample usage in Metaheuristics.ipynb, each metaheuristic is given the same number of objective function evaluations
- - distance and coordinate files used for sample usage
- - animated plots for each metaheuristics' evolution of best found solution
+  - sample usage in Metaheuristics.ipynb, each metaheuristic is given the same number of objective function evaluations
+    - distance and coordinate files used for sample usage
+    - animated plots for each metaheuristics' evolution of best found solution
 - a way to generate new sets of cities with GenerateData.py
- - can generate cities arranged along a circle or randomly placed (see file for useage)
+  - can generate cities arranged along a circle or randomly placed (see file for useage)
 - plotting tours (animated and unanimated) in plot_tsp.py
 
 Description:
