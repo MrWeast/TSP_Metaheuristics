@@ -11,7 +11,7 @@ Metaheuristics Used:
 - Particle Swarm (PS)
 
 Includes:
-- demonstration of the various metaheuristics in Metaheuristics.ipynb
+- demonstration of the various metaheuristics in Metaheuristics.ipynb as well as the videos showing the evolution of found tours
 - a way to generate new sets of cities with GenerateData.py
 - plotting tours (animated and unanimated) in plot_tsp.py
 
