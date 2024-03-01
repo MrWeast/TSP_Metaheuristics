@@ -4,7 +4,6 @@ import random as rand
 import math
 
 
-
 #given an array calculates sum of distances
 def evaluate(D,tour):
     # tour, tour to evaluate
@@ -241,15 +240,15 @@ def Local_Search(D,inital_tour, count_limit):
     
     #print inital info and initialize solution
     best_tour, best_solution = print_init_info(D,inital_tour,1)
-
+    best_tours = [] # for live plot
+    itr = [] # iteration the best tour was found on
+    best_tours.append(best_tour)
+    
     #initialize stuff before loop
-    count = 0 #count of iterations
     curr_tour = best_tour.copy()
     curr_solution = best_solution
-    isRunning = True
 
-    is_better_count = 0
-    while(isRunning):
+    for i in range(count_limit):
         #generate new tour
         curr_tour = swap(best_tour.copy())
         curr_solution = evaluate(D,curr_tour)
@@ -258,26 +257,24 @@ def Local_Search(D,inital_tour, count_limit):
         if (curr_solution < best_solution): 
             best_tour = curr_tour.copy()
             best_solution = curr_solution
-            is_better_count +=1
-
-        count += 1
-        if (count > count_limit): #if termination conditions are met then stop
-            isRunning = False
+            best_tours.append(best_tour)
+            itr.append(i)
     
     #report findings
-    print(f"{is_better_count} swaps yielded a better solution\n")
-    print(f"{count} swaps total\n")
     print("The final tour for local search is: \n")
     print(best_tour)
     print(f"The final tour distance for local search is: {best_solution}\n")
     print("\n-----------------------------------------------------------\n")
-    return (best_tour, best_solution)
+    return (best_tour, best_solution, [best_tours,itr])
 
 def Simulated_Annealing(D,initial_tour, count_limit,Temp):
    
     #print inital info and initialize solution
     best_tour, best_solution = print_init_info(D,initial_tour,2)
-
+    best_tours = [] # for live plot
+    best_tours.append(best_tour)
+    itr = [] # iteration best tour was found on
+    
     #initalize stuff before loop
     count = 0 #count of iterations
     curr_tour = best_tour.copy()
@@ -299,7 +296,9 @@ def Simulated_Annealing(D,initial_tour, count_limit,Temp):
             if (tmp_solution < best_solution):
                 best_tour = tmp_tour.copy()
                 best_solution = tmp_solution
-
+                best_tours.append(best_tour)
+                itr.append(count)
+                
                 curr_tour = tmp_tour
                 curr_solution = tmp_solution
                 isWorse = False
@@ -322,15 +321,18 @@ def Simulated_Annealing(D,initial_tour, count_limit,Temp):
     print(f"The final distance for Simulated Annealing is: {best_solution}\n")
     print("\n------------------------------------------------------------------\n")
 
-    return (best_tour, best_solution)
+    return (best_tour, best_solution,[best_tours, itr])
 
 
 #local search that moves to new tour as soon as a better tour is found
 def Variable_Neighborhood_Search(D,initial_tour,fail_limit, count_limit):
     
+    
     #print inital info and initialize solution
     best_tour, best_solution = print_init_info(D,initial_tour,3)
-
+    best_tours = [] # for live plot
+    best_tours.append(best_tour)
+    itr = [] # iteration best tour was found on
 
     #initialize stuff before loop
     count = 0 #count of iterations
@@ -351,17 +353,11 @@ def Variable_Neighborhood_Search(D,initial_tour,fail_limit, count_limit):
             curr_tour = Var_Neighborhood_Swap(best_tour.copy(),k) #generate a new tour
             curr_solution = evaluate(D,curr_tour) #evaluate a new tour
 
-            unique_elements, counts = np.unique(curr_tour, return_counts=True)
-            if np.size(unique_elements) < size:
-                print("The array has duplicates.")
-                print('k',k)
-                exit
-
-
-
             if (curr_solution < best_solution): # if new tour is better than current best update best_tour and exit inner loop
                 best_tour = curr_tour
                 best_solution = curr_solution
+                best_tours.append(best_tour)
+                itr.append(count)
                 isWorse = False
             elif (fail_count > fail_limit): #if fail limit is reached then exit loop
                 isWorse = False
@@ -385,13 +381,15 @@ def Variable_Neighborhood_Search(D,initial_tour,fail_limit, count_limit):
     print(best_tour)
     print(best_solution)
     print("\n-----------------------------------------------------------\n")
-    return (best_tour, best_solution)
+    return (best_tour, best_solution,[best_tours, itr])
 
 
 def Particle_Swarm(D,count_limit, weights, num_particles,initial_tour):
     #print intial info
     best_tour, best_solution = print_init_info(D,initial_tour,4)
-
+    best_tours = []
+    best_tours.append(best_tour)
+    itr = [] # iteration best tour was found on
     #generate inital random keys
     Particles,Velocity = Genrate_Points(D,num_particles)
     Current_Particle_Best = Particles.copy() #current best key for each particle
@@ -416,6 +414,14 @@ def Particle_Swarm(D,count_limit, weights, num_particles,initial_tour):
             best_key_index = curr_eval_best_index #update best index
             Best_Key = Particles[best_key_index] #update best key
             Best_Value = particle_evaluations[best_key_index] #update best value
+            
+            temp_array = np.zeros((2,Particles.shape[1]))
+            temp_array[0,:] = initial_tour #tour to be sorted based on key
+            temp_array[1,:] = Best_Key #key to sort by
+            best_tour = temp_array[1,:].argsort().astype(int) #temp tour now sorted by key
+            itr.append(i)
+            best_solution = evaluate(D,best_tour)
+            best_tours.append(best_tour)
         
         #update each particle's personal best
         for j in range(Particles.shape[0]):
@@ -425,11 +431,7 @@ def Particle_Swarm(D,count_limit, weights, num_particles,initial_tour):
                 Current_Particle_Best[j,:] = Particles[j,:]
 
 
-    temp_array = np.zeros((2,Particles.shape[1]))
-    temp_array[0,:] = initial_tour #tour to be sorted based on key
-    temp_array[1,:] =Best_Key #key to sort by
-    best_tour = temp_array[1,:].argsort().astype(int) #temp tour now sorted by key
-    best_solution = evaluate(D,best_tour)
+    
     
 
     print(str(count_limit) + " iterations were performed\n")
@@ -440,7 +442,7 @@ def Particle_Swarm(D,count_limit, weights, num_particles,initial_tour):
     print("\n-----------------------------------------------------------\n")
 
 
-    return (best_tour, best_solution)
+    return (best_tour, best_solution,[best_tours, itr])
 
 def GA(D,count_limit, num_chromosomes):
     
@@ -458,6 +460,10 @@ def GA(D,count_limit, num_chromosomes):
     best_tour = population[best_tour_index,:].copy()
     best_value = population_evaluations[best_tour_index]
     
+    best_tours = [] # for live plot
+    itr = [] # iteration best tour was found in
+    best_tours.append(best_tour.astype(int))
+    
     
     for i in range(count_limit):
         
@@ -471,6 +477,8 @@ def GA(D,count_limit, num_chromosomes):
         if population_evaluations[best_tour_index] < best_value:
             best_tour = population[best_tour_index].copy()
             best_value = population_evaluations[best_tour_index]
+            best_tours.append(best_tour.astype(int))
+            itr.append(i)
             
         # cut population down to top half of tours
         sort = population_evaluations.argsort()
@@ -486,7 +494,7 @@ def GA(D,count_limit, num_chromosomes):
     print(best_tour)
     print(f"The final distance for GA is: {best_value}\n")
     
-    return best_tour.astype(int), best_value
+    return best_tour.astype(int), best_value,[best_tours, itr]
 
 
 
